@@ -1,0 +1,17 @@
+{
+  "managed": true,
+  "locks": [
+    {
+      "setting_id": "privacy.encrypt_index_db",
+      "locked_value": true,
+      "reason": "Encryption is required by organization policy.",
+      "source": "MDM"
+    },
+    {
+      "setting_id": "data.telemetry",
+      "locked_value": false,
+      "reason": "Data collection is disabled for privacy compliance.",
+      "source": "Group Policy"
+    }
+  ]
+}

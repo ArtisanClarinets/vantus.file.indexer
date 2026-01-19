@@ -1,0 +1,139 @@
+<Page
+    x:Class="Vantus.App.Pages.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <NavigationView x:Name="NavView"
+                    PaneDisplayMode="Auto"
+                    ItemInvoked="NavView_ItemInvoked"
+                    Loaded="NavView_Loaded"
+                    IsSettingsVisible="False">
+        <NavigationView.AutoSuggestBox>
+             <AutoSuggestBox x:Name="SearchBox" QueryIcon="Find" PlaceholderText="Search settings"
+                             TextChanged="SearchBox_TextChanged"
+                             SuggestionChosen="SearchBox_SuggestionChosen"/>
+        </NavigationView.AutoSuggestBox>
+        <NavigationView.MenuItems>
+             <!-- General -->
+             <NavigationViewItemHeader Content="General" />
+             <NavigationViewItem Content="Appearance &amp; Language" Tag="appearance_language" Icon="Color" />
+             <NavigationViewItem Content="Startup &amp; Tray" Tag="startup_tray" Icon="Power" />
+             <NavigationViewItem Content="Modes &amp; Presets" Tag="modes_presets" Icon="Switch" />
+             <NavigationViewItem Content="Power &amp; Performance" Tag="power_performance" Icon="SpeedHigh" />
+             <NavigationViewItem Content="Data Handling" Tag="data_handling" Icon="Library" />
+
+             <!-- Workspaces -->
+             <NavigationViewItemHeader Content="Workspaces" />
+             <NavigationViewItem Content="Switch Workspace" Tag="workspace_switcher" Icon="Switch" />
+             <NavigationViewItem Content="Defaults" Tag="workspace_defaults" Icon="Page2" />
+             <NavigationViewItem Content="Import &amp; Export" Tag="import_export" Icon="Download" />
+
+             <!-- Locations -->
+             <NavigationViewItemHeader Content="Locations" />
+             <NavigationViewItem Content="Included Locations" Tag="included_locations" Icon="Folder" />
+             <NavigationViewItem Content="Exclusions" Tag="exclusions" Icon="Cancel" />
+             <NavigationViewItem Content="Policy" Tag="location_policy" Icon="Permissions" />
+
+             <!-- Indexing -->
+             <NavigationViewItemHeader Content="Indexing" />
+             <NavigationViewItem Content="Status" Tag="status" Icon="StatusCircleRing" />
+             <NavigationViewItem Content="Change Detection" Tag="change_detection" Icon="Find" />
+             <NavigationViewItem Content="Performance" Tag="performance" Icon="SpeedHigh" />
+             <NavigationViewItem Content="Content Limits" Tag="content_limits" Icon="Filter" />
+
+             <!-- AI Models -->
+             <NavigationViewItemHeader Content="AI Models" />
+             <NavigationViewItem Content="Runtime &amp; Hardware" Tag="runtime_hardware" Icon="Processor" />
+             <NavigationViewItem Content="Model Set" Tag="model_set" Icon="Library" />
+             <NavigationViewItem Content="Quality Controls" Tag="quality_controls" Icon="Like" />
+
+             <!-- Extraction -->
+             <NavigationViewItemHeader Content="Extraction" />
+             <NavigationViewItem Content="Documents" Tag="documents" Icon="Document" />
+             <NavigationViewItem Content="Images" Tag="images" Icon="Pictures" />
+             <NavigationViewItem Content="Code" Tag="code" Icon="Code" />
+             <NavigationViewItem Content="Archives" Tag="archives" Icon="ZipFolder" />
+             <NavigationViewItem Content="Media" Tag="media" Icon="MusicInfo" />
+             <NavigationViewItem Content="Email &amp; Exports" Tag="email_exports" Icon="Mail" />
+
+             <!-- Organize & Automations -->
+             <NavigationViewItemHeader Content="Organize &amp; Automations" />
+             <NavigationViewItem Content="Organizing Mode" Tag="organizing_mode" Icon="Shuffle" />
+             <NavigationViewItem Content="Rules" Tag="rules" Icon="List" />
+             <NavigationViewItem Content="Safety &amp; Undo" Tag="safety_undo" Icon="Undo" />
+             <NavigationViewItem Content="Review Queue" Tag="review_queue" Icon="CheckList" />
+
+             <!-- Tags & Taxonomy -->
+             <NavigationViewItemHeader Content="Tags &amp; Taxonomy" />
+             <NavigationViewItem Content="Tagging Behavior" Tag="tagging_behavior" Icon="Tag" />
+             <NavigationViewItem Content="Vocabulary &amp; Synonyms" Tag="vocabulary_synonyms" Icon="Book" />
+             <NavigationViewItem Content="Windows Metadata" Tag="windows_metadata_fields" Icon="List" />
+
+             <!-- Partners -->
+             <NavigationViewItemHeader Content="Partners" />
+             <NavigationViewItem Content="Directory" Tag="partner_directory" Icon="Contact" />
+             <NavigationViewItem Content="Matching Logic" Tag="matching_logic" Icon="Shuffle" />
+             <NavigationViewItem Content="Policies" Tag="partner_policies" Icon="Permissions" />
+
+             <!-- Search -->
+             <NavigationViewItemHeader Content="Search" />
+             <NavigationViewItem Content="Mode" Tag="search_mode" Icon="Find" />
+             <NavigationViewItem Content="Results &amp; Previews" Tag="results_previews" Icon="Eye" />
+             <NavigationViewItem Content="Ranking &amp; Facets" Tag="ranking_facets" Icon="Sort" />
+
+             <!-- Windows Integration -->
+             <NavigationViewItemHeader Content="Windows Integration" />
+             <NavigationViewItem Content="Explorer Surfaces" Tag="explorer_surfaces" Icon="Folder" />
+             <NavigationViewItem Content="Context Menu" Tag="context_menu_actions" Icon="Menu" />
+             <NavigationViewItem Content="Search Integration" Tag="windows_search_integration" Icon="Find" />
+
+             <!-- Privacy & Security -->
+             <NavigationViewItemHeader Content="Privacy &amp; Security" />
+             <NavigationViewItem Content="Local Storage" Tag="local_storage_encryption" Icon="Save" />
+             <NavigationViewItem Content="Access Controls" Tag="access_controls" Icon="Lock" />
+             <NavigationViewItem Content="Sensitive Data" Tag="sensitive_data_protections" Icon="HideBcc" />
+             <NavigationViewItem Content="Keys" Tag="keys_rotation" Icon="Key" />
+
+             <!-- Compliance & Audit -->
+             <NavigationViewItemHeader Content="Compliance &amp; Audit" />
+             <NavigationViewItem Content="Audit Log" Tag="audit_log" Icon="List" />
+             <NavigationViewItem Content="Retention" Tag="retention_legal_hold" Icon="Clock" />
+             <NavigationViewItem Content="Reports" Tag="policy_reports" Icon="ReportDocument" />
+
+             <!-- Notifications -->
+             <NavigationViewItemHeader Content="Notifications" />
+             <NavigationViewItem Content="Alerts &amp; Banners" Tag="alerts_banners" Icon="Message" />
+             <NavigationViewItem Content="Quiet Hours" Tag="quiet_hours" Icon="Clock" />
+
+             <!-- Storage & Maintenance -->
+             <NavigationViewItemHeader Content="Storage &amp; Maintenance" />
+             <NavigationViewItem Content="Locations" Tag="storage_locations" Icon="Folder" />
+             <NavigationViewItem Content="Cache" Tag="cache_controls" Icon="SaveLocal" />
+             <NavigationViewItem Content="Maintenance" Tag="maintenance_repair" Icon="Repair" />
+             <NavigationViewItem Content="Backup" Tag="backup_restore" Icon="Upload" />
+
+             <!-- Diagnostics -->
+             <NavigationViewItemHeader Content="Diagnostics" />
+             <NavigationViewItem Content="Status" Tag="system_status" Icon="StatusCircleRing" />
+             <NavigationViewItem Content="Performance Trace" Tag="performance_trace" Icon="SpeedHigh" />
+             <NavigationViewItem Content="Export Bundle" Tag="export_diagnostics_bundle" Icon="Download" />
+             <NavigationViewItem Content="Advanced" Tag="advanced_power_user" Icon="Admin" />
+
+             <!-- Admin -->
+             <NavigationViewItemHeader Content="Admin" />
+             <NavigationViewItem Content="Policy Overview" Tag="policy_overview" Icon="Permissions" />
+             <NavigationViewItem Content="Restrictions" Tag="enforced_restrictions" Icon="Lock" />
+             <NavigationViewItem Content="Deployment" Tag="deployment_updates" Icon="Upload" />
+        </NavigationView.MenuItems>
+
+        <NavigationView.FooterMenuItems>
+             <NavigationViewItem Content="About" Tag="about" Icon="Info" />
+             <!-- About covers Reset -->
+        </NavigationView.FooterMenuItems>
+
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+</Page>

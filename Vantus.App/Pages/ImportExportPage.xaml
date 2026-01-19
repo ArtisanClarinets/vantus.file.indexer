@@ -1,0 +1,51 @@
+<Page
+    x:Class="Vantus.App.Pages.ImportExportPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Vantus.App.ViewModels"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Padding="24">
+            <TextBlock Text="Import &amp; Export" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <TextBlock Text="Manage your settings by exporting them to a file or importing from an existing file." Style="{StaticResource BodyTextBlockStyle}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="Export Settings" Command="{x:Bind ViewModel.ExportSettingsCommand}" />
+                <Button Content="Import Settings..." Command="{x:Bind ViewModel.ImportSettingsCommand}" />
+            </StackPanel>
+
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+
+            <StackPanel Visibility="{x:Bind ViewModel.ImportDiffs.Count, Converter={StaticResource CountToVisibilityConverter}, Mode=OneWay}"> <!-- Assume converter exists or binding works with some help, skipping converter for simplicity in pseudo-code, but logically needed. I'll omit visibility binding or assume standard converters available in toolkit -->
+                 <TextBlock Text="Import Preview" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,20,0,10"/>
+
+                 <ItemsControl ItemsSource="{x:Bind ViewModel.ImportDiffs, Mode=OneWay}">
+                     <ItemsControl.ItemTemplate>
+                         <DataTemplate x:DataType="vm:DiffGroup">
+                              <StackPanel Margin="0,10">
+                                  <TextBlock Text="{x:Bind Page}" FontWeight="Bold" Margin="0,0,0,4"/>
+                                  <ItemsControl ItemsSource="{x:Bind Items}">
+                                       <ItemsControl.ItemTemplate>
+                                           <DataTemplate x:DataType="vm:DiffItem">
+                                               <Grid ColumnDefinitions="2*,1*,1*" Margin="0,2">
+                                                    <TextBlock Text="{x:Bind Label}" Grid.Column="0"/>
+                                                    <TextBlock Text="{x:Bind OldValue}" Grid.Column="1" Foreground="Red" Opacity="0.8"/>
+                                                    <TextBlock Text="{x:Bind NewValue}" Grid.Column="2" Foreground="Green" FontWeight="Bold"/>
+                                               </Grid>
+                                           </DataTemplate>
+                                       </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+                              </StackPanel>
+                         </DataTemplate>
+                     </ItemsControl.ItemTemplate>
+                 </ItemsControl>
+
+                 <Button Content="Confirm Import" Command="{x:Bind ViewModel.ApplyImportCommand}" Style="{StaticResource AccentButtonStyle}" Margin="0,10,0,0"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

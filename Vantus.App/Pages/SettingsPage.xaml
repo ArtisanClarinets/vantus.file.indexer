@@ -1,0 +1,17 @@
+<Page
+    x:Class="Vantus.App.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Vantus.App.Controls"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Padding="24,12,24,24">
+            <TextBlock x:Name="PageTitleText" Text="{x:Bind ViewModel.PageTitle, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <controls:SettingsPageRenderer Groups="{x:Bind ViewModel.Groups, Mode=OneWay}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
