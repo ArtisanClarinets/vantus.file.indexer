@@ -149,5 +149,5 @@ public partial class App : Application
         catch { }
     }
 
-    private Window m_window;
++    private Window m_window;
 }
