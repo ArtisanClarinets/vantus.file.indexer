@@ -50,6 +50,7 @@ public partial class App : Application
     protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         await Host.StartAsync();
+        StartEngine();
 
         try
         {
@@ -72,6 +73,38 @@ public partial class App : Application
 
         m_window = new MainWindow();
         m_window.Activate();
+    }
+
+    private void StartEngine()
+    {
+        // Try to find the engine executable relative to the app
+        // In dev: ../../../Vantus.Engine/bin/Debug/net8.0/Vantus.Engine.exe
+        // In prod: ./Vantus.Engine.exe
+        var engineName = "Vantus.Engine.exe";
+        var devPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Vantus.Engine", "bin", "Debug", "net8.0", engineName);
+        var prodPath = Path.Combine(AppContext.BaseDirectory, engineName);
+
+        string? path = null;
+        if (File.Exists(prodPath)) path = prodPath;
+        else if (File.Exists(devPath)) path = devPath;
+
+        if (path != null)
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = path,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to start engine: {ex}");
+            }
+        }
     }
 
     private Window m_window;

@@ -18,6 +18,22 @@ public class NamedPipeEngineClient : IEngineClient
         return await SendCommandAsync("STATUS");
     }
 
+    public async Task<IEnumerable<string>> SearchAsync(string query)
+    {
+        var response = await SendCommandAsync($"SEARCH {query}");
+        if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
+            return Enumerable.Empty<string>();
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(response) ?? Enumerable.Empty<string>();
+        }
+        catch
+        {
+            return Enumerable.Empty<string>();
+        }
+    }
+
     public Task PauseIndexingAsync() => SendCommandAsync("PAUSE");
     public Task ResumeIndexingAsync() => SendCommandAsync("RESUME");
     public Task RequestRebuildIndexAsync() => SendCommandAsync("REBUILD");

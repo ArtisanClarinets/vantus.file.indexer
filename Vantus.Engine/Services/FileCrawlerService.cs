@@ -10,6 +10,7 @@ public class FileCrawlerService : IDisposable
     private readonly IndexerService _indexer;
     private readonly ISettingsStore _settingsStore;
     private readonly List<FileSystemWatcher> _watchers = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CancellationTokenSource> _debounceTokens = new();
 
     public FileCrawlerService(ILogger<FileCrawlerService> logger, IndexerService indexer, ISettingsStore settingsStore)
     {
@@ -65,14 +66,32 @@ public class FileCrawlerService : IDisposable
 
     private void OnFileChanged(object sender, FileSystemEventArgs e)
     {
-        _ = _indexer.IndexFileAsync(e.FullPath);
+        DebounceIndex(e.FullPath);
     }
 
     private void OnFileRenamed(object sender, RenamedEventArgs e)
     {
         // Delete old, index new
         // For now just index new. Ideally we remove the old entry from DB.
-        _ = _indexer.IndexFileAsync(e.FullPath);
+        DebounceIndex(e.FullPath);
+    }
+
+    private void DebounceIndex(string filePath)
+    {
+        var cts = new CancellationTokenSource();
+        _debounceTokens.AddOrUpdate(filePath, cts, (key, oldCts) =>
+        {
+            oldCts.Cancel();
+            oldCts.Dispose();
+            return cts;
+        });
+
+        _ = Task.Delay(500, cts.Token).ContinueWith(async t =>
+        {
+            if (t.IsCanceled) return;
+            _debounceTokens.TryRemove(filePath, out _);
+            await _indexer.IndexFileAsync(filePath);
+        }, TaskScheduler.Default);
     }
 
     private void OnFileDeleted(object sender, FileSystemEventArgs e)
@@ -109,6 +128,7 @@ public class FileCrawlerService : IDisposable
 
     private async Task CrawlDirectoryAsync(string path, CancellationToken ct)
     {
+        // Files
         try
         {
             foreach (var file in Directory.EnumerateFiles(path))
@@ -123,21 +143,33 @@ public class FileCrawlerService : IDisposable
                     _logger.LogError(ex, "Error indexing file {File}", file);
                 }
             }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _logger.LogWarning("Access denied to files in {Path}", path);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error listing files in {Path}", path);
+        }
 
+        // Subdirectories
+        try
+        {
             foreach (var dir in Directory.EnumerateDirectories(path))
             {
                 if (ct.IsCancellationRequested) return;
-                // Check exclusions here (omitted for brevity)
+                // Recurse
                 await CrawlDirectoryAsync(dir, ct);
             }
         }
         catch (UnauthorizedAccessException)
         {
-            _logger.LogWarning("Access denied to {Path}", path);
+            _logger.LogWarning("Access denied to directories in {Path}", path);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error crawling {Path}", path);
+            _logger.LogError(ex, "Error listing directories in {Path}", path);
         }
     }
 }

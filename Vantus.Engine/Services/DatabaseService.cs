@@ -87,6 +87,31 @@ public class DatabaseService
                 action_value TEXT NOT NULL,
                 is_active BOOLEAN DEFAULT 1
             );
+
+            CREATE TABLE IF NOT EXISTS partners (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                domains TEXT, -- comma separated
+                keywords TEXT -- comma separated
+            );
+
+            CREATE TABLE IF NOT EXISTS file_partners (
+                file_id INTEGER NOT NULL,
+                partner_id INTEGER NOT NULL,
+                confidence REAL DEFAULT 1.0,
+                PRIMARY KEY (file_id, partner_id),
+                FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
+                FOREIGN KEY(partner_id) REFERENCES partners(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS action_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file_path TEXT NOT NULL,
+                action_type TEXT NOT NULL,
+                description TEXT,
+                timestamp INTEGER NOT NULL,
+                status TEXT
+            );
         ";
 
         await connection.ExecuteAsync(sql);

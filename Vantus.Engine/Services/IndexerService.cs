@@ -8,18 +8,25 @@ public class IndexerService
 {
     private readonly DatabaseService _db;
     private readonly RulesEngineService _rules;
+    private readonly AiService _ai;
+    private readonly PartnerService _partners;
+    private readonly ActionLogService _actionLog;
     private readonly ILogger<IndexerService> _logger;
     private readonly List<IFileParser> _parsers;
 
-    public IndexerService(DatabaseService db, RulesEngineService rules, ILogger<IndexerService> logger)
+    public IndexerService(DatabaseService db, RulesEngineService rules, AiService ai, PartnerService partners, ActionLogService actionLog, ILogger<IndexerService> logger)
     {
         _db = db;
         _rules = rules;
+        _ai = ai;
+        _partners = partners;
+        _actionLog = actionLog;
         _logger = logger;
         _parsers = new List<IFileParser>
         {
             new TextParser(),
             new PdfParser(),
+            new OfficeParser(),
             new ImageParser()
         };
     }
@@ -29,17 +36,31 @@ public class IndexerService
         var fileInfo = new FileInfo(filePath);
         if (!fileInfo.Exists) return;
 
+        // Retry logic for parsing locked files
         string content = "";
         var parser = _parsers.FirstOrDefault(p => p.CanParse(fileInfo.Extension));
         if (parser != null)
         {
-            try
+            const int MaxRetries = 3;
+            for (int i = 0; i < MaxRetries; i++)
             {
-                content = await parser.ParseAsync(filePath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to parse content for {Path}", filePath);
+                try
+                {
+                    content = await parser.ParseAsync(filePath);
+                    break;
+                }
+                catch (IOException) // File locked
+                {
+                    if (i == MaxRetries - 1)
+                        _logger.LogWarning("Failed to parse content for {Path} after retries (Locked)", filePath);
+                    else
+                        await Task.Delay(500 * (i + 1));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to parse content for {Path}", filePath);
+                    break;
+                }
             }
         }
 
@@ -65,6 +86,15 @@ public class IndexerService
 
         // Trigger rules
         await _rules.ApplyRulesAsync(filePath);
+
+        // Trigger AI
+        await _ai.ProcessFileAsync(filePath, content);
+
+        // Trigger Partners
+        await _partners.DetectPartnersAsync(filePath, content);
+
+        // Log
+        await _actionLog.LogActionAsync(filePath, "Index", "Indexed file with metadata extraction");
 
         _logger.LogDebug("Indexed {Path}", filePath);
     }
