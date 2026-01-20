@@ -7,4 +7,5 @@ public interface IPolicyEngine
     Task InitializeAsync();
     PolicyLock? GetLock(string settingId);
     bool IsLocked(string settingId);
+    bool IsManaged { get; }
 }

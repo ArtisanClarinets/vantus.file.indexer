@@ -2,6 +2,8 @@ using System.Text.Json;
 using Vantus.Core.Services;
 using Vantus.Core.Models;
 using Xunit;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace Vantus.Tests;
 
@@ -32,12 +34,14 @@ public class PolicyTests : IDisposable
         };
         await File.WriteAllTextAsync(PolicyFileName, JsonSerializer.Serialize(policy));
 
-        var engine = new PolicyEngine();
+        var loggerMock = new Mock<ILogger<PolicyEngine>>();
+        var engine = new PolicyEngine(loggerMock.Object);
         await engine.InitializeAsync();
 
         Assert.True(engine.IsLocked("locked.setting"));
         var lockInfo = engine.GetLock("locked.setting");
         Assert.NotNull(lockInfo);
         Assert.Equal("Test", lockInfo!.Reason);
+        Assert.True(engine.IsManaged);
     }
 }

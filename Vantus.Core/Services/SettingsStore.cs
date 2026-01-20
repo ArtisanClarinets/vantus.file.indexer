@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Vantus.Core.Interfaces;
 using Vantus.Core.Models;
@@ -11,11 +12,21 @@ public class SettingsStore : ISettingsStore
     private SettingsFileModel _model = new();
     private readonly JsonSerializerOptions _options = new() { WriteIndented = true };
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly ILogger<SettingsStore> _logger;
+    private readonly string? _customPath;
+
+    public SettingsStore(ILogger<SettingsStore> logger, string? storagePath = null)
+    {
+        _logger = logger;
+        _customPath = storagePath;
+    }
 
     public event EventHandler<string>? SettingChanged;
 
     private string GetPath()
     {
+        if (!string.IsNullOrEmpty(_customPath)) return _customPath;
+
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var folder = Path.Combine(localAppData, FolderName);
         Directory.CreateDirectory(folder);
@@ -35,11 +46,16 @@ public class SettingsStore : ISettingsStore
                     var json = await File.ReadAllTextAsync(path);
                     _model = JsonSerializer.Deserialize<SettingsFileModel>(json, _options) ?? new();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Failed to load settings file. Using defaults.");
                     _model = new();
                 }
             }
+        }
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, "Critical error accessing settings path.");
         }
         finally
         {
@@ -56,7 +72,10 @@ public class SettingsStore : ISettingsStore
             var json = JsonSerializer.Serialize(_model, _options);
             await File.WriteAllTextAsync(path, json);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save settings.");
+        }
         finally
         {
             _semaphore.Release();
@@ -69,12 +88,25 @@ public class SettingsStore : ISettingsStore
         {
             if (val is JsonElement element)
             {
-                try { return element.Deserialize<T>(); } catch { }
+                try
+                {
+                    return element.Deserialize<T>();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to deserialize setting '{Key}' to type {Type}", key, typeof(T).Name);
+                    return default;
+                }
             }
             if (val is T tVal) return tVal;
-            try {
+            try
+            {
                  return (T)Convert.ChangeType(val, typeof(T));
-            } catch { }
+            }
+            catch (Exception ex)
+            {
+                 _logger.LogWarning(ex, "Failed to convert setting '{Key}' to type {Type}", key, typeof(T).Name);
+            }
         }
         return default;
     }
