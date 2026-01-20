@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using Microsoft.Extensions.Logging;
+using Vantus.Core.Models;
 
 namespace Vantus.Core.Engine;
 
@@ -13,24 +14,35 @@ public class NamedPipeEngineClient : IEngineClient
         _logger = logger;
     }
 
-    public async Task<string> GetIndexStatusAsync()
+    public async Task<EngineStatus> GetIndexStatusAsync()
     {
-        return await SendCommandAsync("STATUS");
-    }
-
-    public async Task<IEnumerable<string>> SearchAsync(string query)
-    {
-        var response = await SendCommandAsync($"SEARCH {query}");
+        var response = await SendCommandAsync("STATUS");
         if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
-            return Enumerable.Empty<string>();
+            return new EngineStatus { State = "Disconnected" };
 
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(response) ?? Enumerable.Empty<string>();
+            return System.Text.Json.JsonSerializer.Deserialize<EngineStatus>(response) ?? new EngineStatus { State = "Unknown" };
         }
         catch
         {
-            return Enumerable.Empty<string>();
+            return new EngineStatus { State = "Error" };
+        }
+    }
+
+    public async Task<IEnumerable<FileResult>> SearchAsync(string query)
+    {
+        var response = await SendCommandAsync($"SEARCH {query}");
+        if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
+            return Enumerable.Empty<FileResult>();
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<FileResult>>(response) ?? Enumerable.Empty<FileResult>();
+        }
+        catch
+        {
+            return Enumerable.Empty<FileResult>();
         }
     }
 

@@ -12,8 +12,9 @@
                     Loaded="NavView_Loaded"
                     IsSettingsVisible="False">
         <NavigationView.AutoSuggestBox>
-             <AutoSuggestBox x:Name="SearchBox" QueryIcon="Find" PlaceholderText="Search settings"
+             <AutoSuggestBox x:Name="SearchBox" QueryIcon="Find" PlaceholderText="Search files or settings"
                              TextChanged="SearchBox_TextChanged"
+                             QuerySubmitted="SearchBox_QuerySubmitted"
                              SuggestionChosen="SearchBox_SuggestionChosen"/>
         </NavigationView.AutoSuggestBox>
         <NavigationView.MenuItems>

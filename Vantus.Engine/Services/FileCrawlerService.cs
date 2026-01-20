@@ -11,6 +11,9 @@ public class FileCrawlerService : IDisposable
     private readonly ISettingsStore _settingsStore;
     private readonly List<FileSystemWatcher> _watchers = new();
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CancellationTokenSource> _debounceTokens = new();
+    private int _activeCrawls = 0;
+
+    public bool IsCrawling => _activeCrawls > 0;
 
     public FileCrawlerService(ILogger<FileCrawlerService> logger, IndexerService indexer, ISettingsStore settingsStore)
     {
@@ -45,7 +48,18 @@ public class FileCrawlerService : IDisposable
 
                 StartWatcher(path);
                 // We crawl in background to not block the caller/updates
-                _ = Task.Run(() => CrawlDirectoryAsync(path, cancellationToken), cancellationToken);
+                Interlocked.Increment(ref _activeCrawls);
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await CrawlDirectoryAsync(path, cancellationToken);
+                    }
+                    finally
+                    {
+                        Interlocked.Decrement(ref _activeCrawls);
+                    }
+                }, cancellationToken);
             }
         }
     }
