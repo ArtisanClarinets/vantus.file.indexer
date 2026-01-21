@@ -25,6 +25,10 @@ public sealed partial class ShellPage : Page
                      ContentFrame.Navigate(typeof(ModesPage));
                  else if (navItem.Tag.ToString() == "import_export")
                      ContentFrame.Navigate(typeof(ImportExportPage));
+                 else if (navItem.Tag.ToString() == "status" || navItem.Tag.ToString() == "system_status")
+                     ContentFrame.Navigate(typeof(DashboardPage));
+                 else if (navItem.Tag.ToString() == "results_previews")
+                     ContentFrame.Navigate(typeof(SearchPage));
                  else
                      ContentFrame.Navigate(typeof(SettingsPage), navItem.Tag);
                  break;
@@ -46,6 +50,14 @@ public sealed partial class ShellPage : Page
                 else if (tag == "import_export")
                 {
                     ContentFrame.Navigate(typeof(ImportExportPage));
+                }
+                else if (tag == "status" || tag == "system_status")
+                {
+                    ContentFrame.Navigate(typeof(DashboardPage));
+                }
+                else if (tag == "results_previews")
+                {
+                    ContentFrame.Navigate(typeof(SearchPage));
                 }
                 else
                 {
@@ -72,6 +84,14 @@ public sealed partial class ShellPage : Page
 
             // Sync NavView selection (optional but good)
             // ... (requires finding the item with Tag == def.Page)
+        }
+    }
+
+    private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion == null && !string.IsNullOrWhiteSpace(args.QueryText))
+        {
+            ContentFrame.Navigate(typeof(SearchPage), args.QueryText);
         }
     }
 }

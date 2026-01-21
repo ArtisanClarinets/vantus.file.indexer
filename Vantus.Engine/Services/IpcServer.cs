@@ -1,6 +1,7 @@
 
 using System.IO.Pipes;
 using System.Text;
+using Dapper;
 using Microsoft.Extensions.Logging;
 using Vantus.Core.Models;
 
