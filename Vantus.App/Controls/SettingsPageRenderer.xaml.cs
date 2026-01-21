@@ -72,7 +72,12 @@ public sealed partial class SettingsPageRenderer : UserControl
                 case "toggle":
                     var ts = new ToggleSwitch();
                     try { ts.IsOn = Convert.ToBoolean(vm.Value); } catch {}
-                    ts.Toggled += (s, e) => vm.Value = ts.IsOn;
+                    ts.Toggled += (s, e) => { if (ts.IsOn != Convert.ToBoolean(vm.Value)) vm.Value = ts.IsOn; };
+                    vm.PropertyChanged += (s, e) =>
+                    {
+                         if (e.PropertyName == nameof(vm.Value))
+                            ts.IsOn = Convert.ToBoolean(vm.Value);
+                    };
                     content = ts;
                     break;
                 case "slider":
@@ -85,7 +90,12 @@ public sealed partial class SettingsPageRenderer : UserControl
                         if(je.TryGetProperty("step", out var step)) sl.StepFrequency = step.GetDouble();
                     }
                     try { sl.Value = Convert.ToDouble(vm.Value); } catch {}
-                    sl.ValueChanged += (s, e) => vm.Value = sl.Value;
+                    sl.ValueChanged += (s, e) => { if (sl.Value != Convert.ToDouble(vm.Value)) vm.Value = sl.Value; };
+                    vm.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(vm.Value))
+                            sl.Value = Convert.ToDouble(vm.Value);
+                    };
                     content = sl;
                     break;
                 case "dropdown":
@@ -104,17 +114,29 @@ public sealed partial class SettingsPageRenderer : UserControl
 
                     try { cb.SelectedItem = vm.Value?.ToString(); } catch {}
                     cb.SelectionChanged += (s, e) => vm.Value = cb.SelectedItem;
+                    vm.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(vm.Value))
+                            cb.SelectedItem = vm.Value?.ToString();
+                    };
                     content = cb;
                     break;
                 case "button":
                     var btn = new Button();
                     btn.Content = "Action";
+                    // Button usually triggers command, but here just placeholder?
+                    // Assuming no 'Value' to bind for button except maybe content or enabled state.
                     content = btn;
                     break;
                 case "status":
                     var tb = new TextBlock();
                     tb.Text = vm.Value?.ToString() ?? "";
                     tb.VerticalAlignment = VerticalAlignment.Center;
+                    vm.PropertyChanged += (s, e) =>
+                    {
+                         if (e.PropertyName == nameof(vm.Value))
+                            tb.Text = vm.Value?.ToString() ?? "";
+                    };
                     content = tb;
                     break;
             }

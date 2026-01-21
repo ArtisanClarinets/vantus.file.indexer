@@ -140,4 +140,10 @@ public class DatabaseService
 
         _logger.LogInformation("Database rebuilt (truncated)");
     }
+
+    public async Task<int> GetIndexedFileCountAsync()
+    {
+        using var conn = GetConnection();
+        return await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM files");
+    }
 }

@@ -16,13 +16,10 @@ public class NamedPipeEngineClient : IEngineClient
 
     public async Task<EngineStatus> GetIndexStatusAsync()
     {
-        var response = await SendCommandAsync("STATUS");
-        if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
-            return new EngineStatus { State = "Disconnected" };
-
+        var json = await SendCommandAsync("STATUS");
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<EngineStatus>(response) ?? new EngineStatus { State = "Unknown" };
+            return System.Text.Json.JsonSerializer.Deserialize<EngineStatus>(json) ?? new EngineStatus { State = "Unknown" };
         }
         catch
         {

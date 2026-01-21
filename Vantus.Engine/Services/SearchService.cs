@@ -1,7 +1,6 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Vantus.Core.Models;
-using Vantus.Engine.Models;
 
 namespace Vantus.Engine.Services;
 

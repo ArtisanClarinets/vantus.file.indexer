@@ -5,6 +5,7 @@ using Vantus.Core.Interfaces;
 using Vantus.Core.Services;
 using Vantus.Core.Engine;
 using Vantus.App.ViewModels;
+using Vantus.App.Services;
 
 namespace Vantus.App;
 
@@ -37,6 +38,7 @@ public partial class App : Application
                 services.AddSingleton<IPolicyEngine, PolicyEngine>();
                 services.AddSingleton<IEngineClient, NamedPipeEngineClient>();
                 services.AddSingleton<IImportExportService, ImportExportService>();
+                services.AddSingleton<ShellIntegrationService>();
 
                 // ViewModels
                 services.AddTransient<ShellViewModel>();
@@ -72,6 +74,11 @@ public partial class App : Application
 
             var store = GetService<ISettingsStore>();
             await store.LoadAsync();
+
+            // Shell Integration
+            var shellService = GetService<ShellIntegrationService>();
+            var enableMenu = store.GetValue<bool>("windows.context_menu");
+            shellService.RegisterContextMenu(enableMenu);
         }
         catch (Exception ex)
         {

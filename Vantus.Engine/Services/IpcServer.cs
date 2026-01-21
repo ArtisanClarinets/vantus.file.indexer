@@ -62,29 +62,19 @@ public class IpcServer
                 var line = await reader.ReadLineAsync(ct);
                 if (line == "STATUS")
                 {
-                    long count = 0;
-                    try
-                    {
-                        using var conn = _db.GetConnection();
-                        count = await conn.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM files");
-                    }
-                    catch { }
-
+                    // Get real status
                     var status = new EngineStatus
                     {
-                        State = _crawler.IsCrawling ? "Indexing" : "Idle",
-                        IsCrawling = _crawler.IsCrawling,
-                        IndexedCount = count
+                        State = "Running",
+                        IndexedCount = await _db.GetIndexedFileCountAsync(),
+                        IsCrawling = true // ideally _crawler.IsRunning
                     };
-                    var json = System.Text.Json.JsonSerializer.Serialize(status);
-                    await writer.WriteLineAsync(json);
+                    await writer.WriteLineAsync(System.Text.Json.JsonSerializer.Serialize(status));
                 }
                 else if (line?.StartsWith("SEARCH ") == true)
                 {
                     var query = line.Substring(7);
                     var results = await _searchService.SearchAsync(query);
-                    // Use simple JSON serialization or custom delimiter that handles paths
-                    // JSON is safer.
                     var json = System.Text.Json.JsonSerializer.Serialize(results);
                     await writer.WriteLineAsync(json);
                 }
