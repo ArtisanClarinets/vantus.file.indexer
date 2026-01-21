@@ -2,6 +2,7 @@
 using System.IO.Pipes;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Vantus.Core.Models;
 
 namespace Vantus.Engine.Services;
 
@@ -60,16 +61,20 @@ public class IpcServer
                 var line = await reader.ReadLineAsync(ct);
                 if (line == "STATUS")
                 {
-                    await writer.WriteLineAsync("Indexing");
+                    // Get real status
+                    var status = new EngineStatus
+                    {
+                        State = "Running",
+                        IndexedCount = await _db.GetIndexedFileCountAsync(),
+                        IsCrawling = true // ideally _crawler.IsRunning
+                    };
+                    await writer.WriteLineAsync(System.Text.Json.JsonSerializer.Serialize(status));
                 }
                 else if (line?.StartsWith("SEARCH ") == true)
                 {
                     var query = line.Substring(7);
                     var results = await _searchService.SearchAsync(query);
-                    // Use simple JSON serialization or custom delimiter that handles paths
-                    // JSON is safer.
-                    var paths = results.Select(r => r.Path).ToList();
-                    var json = System.Text.Json.JsonSerializer.Serialize(paths);
+                    var json = System.Text.Json.JsonSerializer.Serialize(results);
                     await writer.WriteLineAsync(json);
                 }
                 else if (line == "REBUILD")
