@@ -1,7 +1,9 @@
 
 using System.IO.Pipes;
 using System.Text;
+using Dapper;
 using Microsoft.Extensions.Logging;
+using Vantus.Core.Models;
 
 namespace Vantus.Engine.Services;
 
@@ -60,7 +62,22 @@ public class IpcServer
                 var line = await reader.ReadLineAsync(ct);
                 if (line == "STATUS")
                 {
-                    await writer.WriteLineAsync("Indexing");
+                    long count = 0;
+                    try
+                    {
+                        using var conn = _db.GetConnection();
+                        count = await conn.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM files");
+                    }
+                    catch { }
+
+                    var status = new EngineStatus
+                    {
+                        State = _crawler.IsCrawling ? "Indexing" : "Idle",
+                        IsCrawling = _crawler.IsCrawling,
+                        IndexedCount = count
+                    };
+                    var json = System.Text.Json.JsonSerializer.Serialize(status);
+                    await writer.WriteLineAsync(json);
                 }
                 else if (line?.StartsWith("SEARCH ") == true)
                 {
@@ -68,8 +85,7 @@ public class IpcServer
                     var results = await _searchService.SearchAsync(query);
                     // Use simple JSON serialization or custom delimiter that handles paths
                     // JSON is safer.
-                    var paths = results.Select(r => r.Path).ToList();
-                    var json = System.Text.Json.JsonSerializer.Serialize(paths);
+                    var json = System.Text.Json.JsonSerializer.Serialize(results);
                     await writer.WriteLineAsync(json);
                 }
                 else if (line == "REBUILD")

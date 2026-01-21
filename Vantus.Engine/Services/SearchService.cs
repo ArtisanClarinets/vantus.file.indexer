@@ -1,5 +1,6 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Vantus.Core.Models;
 using Vantus.Engine.Models;
 
 namespace Vantus.Engine.Services;
@@ -40,12 +41,4 @@ public class SearchService
             return Enumerable.Empty<FileResult>();
         }
     }
-}
-
-public class FileResult
-{
-    public long Id { get; set; }
-    public string Path { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public long Size { get; set; }
 }

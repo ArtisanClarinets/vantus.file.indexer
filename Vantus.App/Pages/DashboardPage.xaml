@@ -1,0 +1,41 @@
+<Page
+    x:Class="Vantus.App.Pages.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="20">
+        <StackPanel Spacing="20">
+            <TextBlock Text="Indexing Status" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <Grid ColumnSpacing="20" RowSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="20" CornerRadius="8" Width="200">
+                    <TextBlock Text="Status" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold"/>
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsIndexing, Mode=OneWay}" Width="20" Height="20" Margin="0,10,0,0" HorizontalAlignment="Left" Visibility="{x:Bind ViewModel.IsIndexing, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="0" Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="20" CornerRadius="8" Width="200">
+                    <TextBlock Text="Indexed Files" Style="{StaticResource CaptionTextBlockStyle}"/>
+                    <TextBlock Text="{x:Bind ViewModel.IndexedCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold"/>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{x:Bind ViewModel.RefreshStatusCommand}" Content="Refresh"/>
+                <Button Command="{x:Bind ViewModel.RebuildIndexCommand}" Content="Rebuild Index" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>
