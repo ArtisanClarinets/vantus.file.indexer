@@ -1,6 +1,6 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
-using Vantus.Engine.Models;
+using Vantus.Core.Models;
 
 namespace Vantus.Engine.Services;
 
@@ -22,7 +22,7 @@ public class SearchService
         // "SELECT * FROM files WHERE id IN (SELECT rowid FROM files_fts WHERE files_fts MATCH @Query)"
 
         var sql = @"
-            SELECT f.*
+            SELECT f.id, f.path, f.name, f.size
             FROM files f
             JOIN files_fts fts ON f.id = fts.rowid
             WHERE fts MATCH @Query
@@ -40,12 +40,4 @@ public class SearchService
             return Enumerable.Empty<FileResult>();
         }
     }
-}
-
-public class FileResult
-{
-    public long Id { get; set; }
-    public string Path { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public long Size { get; set; }
 }

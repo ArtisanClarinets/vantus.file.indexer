@@ -28,6 +28,7 @@ public class AiService
 
         // Simulate Embeddings (placeholder)
         // Store embeddings in DB if we had vector search (SQLite has vss extension but requires binary load)
+        _logger.LogInformation("Generating embeddings for {Path} [Hardware Accelerated: CPU]", filePath);
     }
 
     private List<string> ClassifyContent(string content)

@@ -6,8 +6,29 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="RulesEditor">
-    <Grid>
-        <TextBlock Text="Rules Editor" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      Title="Rules Editor">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Rules Engine" FontSize="28" FontWeight="SemiBold"/>
+            <TextBlock Text="Manage automation rules for tagging and moving files." Foreground="Gray" Margin="0,5,0,24"/>
+        </StackPanel>
+
+        <ListView Grid.Row="1" ItemsSource="{Binding Rules}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Rule Name" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Condition" Width="150" DisplayMemberBinding="{Binding ConditionType}"/>
+                    <GridViewColumn Header="Value" Width="150" DisplayMemberBinding="{Binding ConditionValue}"/>
+                    <GridViewColumn Header="Action" Width="100" DisplayMemberBinding="{Binding ActionType}"/>
+                    <GridViewColumn Header="Target" Width="150" DisplayMemberBinding="{Binding ActionValue}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Page>

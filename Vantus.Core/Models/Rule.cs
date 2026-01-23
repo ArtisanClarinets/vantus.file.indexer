@@ -1,4 +1,4 @@
-namespace Vantus.Engine.Models;
+namespace Vantus.Core.Models;
 
 public class Rule
 {

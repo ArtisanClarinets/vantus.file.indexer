@@ -6,8 +6,60 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="DashboardPage">
-    <Grid>
-        <TextBlock Text="Dashboard" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      Title="Dashboard">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="System Dashboard" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,24"/>
+
+        <StackPanel Grid.Row="1">
+             <Grid>
+                 <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="20"/>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="20"/>
+                     <ColumnDefinition Width="*"/>
+                 </Grid.ColumnDefinitions>
+
+                 <!-- Status -->
+                 <ui:Card Padding="16" VerticalAlignment="Stretch">
+                     <StackPanel>
+                         <ui:SymbolIcon Symbol="Activity24" FontSize="24" HorizontalAlignment="Left"/>
+                         <TextBlock Text="Engine Status" FontSize="14" Foreground="Gray" Margin="0,10,0,0"/>
+                         <TextBlock Text="{Binding Status}" FontSize="24" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                         <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="Gray"/>
+                     </StackPanel>
+                 </ui:Card>
+
+                 <!-- Count -->
+                 <ui:Card Grid.Column="2" Padding="16" VerticalAlignment="Stretch">
+                     <StackPanel>
+                         <ui:SymbolIcon Symbol="Document24" FontSize="24" HorizontalAlignment="Left"/>
+                         <TextBlock Text="Files Indexed" FontSize="14" Foreground="Gray" Margin="0,10,0,0"/>
+                         <TextBlock Text="{Binding IndexedCount}" FontSize="24" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                         <TextBlock Text="Total items" FontSize="12" Foreground="Gray"/>
+                     </StackPanel>
+                 </ui:Card>
+
+                 <!-- Actions -->
+                 <ui:Card Grid.Column="4" Padding="16" VerticalAlignment="Stretch">
+                     <StackPanel>
+                         <ui:SymbolIcon Symbol="Flash24" FontSize="24" HorizontalAlignment="Left"/>
+                         <TextBlock Text="Quick Actions" FontSize="14" Foreground="Gray" Margin="0,10,0,0"/>
+                         <ui:Button Command="{Binding UndoCommand}" Content="Undo Last Action" Margin="0,10,0,0" HorizontalAlignment="Stretch" Icon="{ui:SymbolIcon ArrowUndo24}"/>
+                     </StackPanel>
+                 </ui:Card>
+             </Grid>
+
+             <TextBlock Text="Recent Activity" FontSize="20" FontWeight="SemiBold" Margin="0,30,0,10"/>
+             <ui:Card>
+                <TextBlock Text="Activity logs will appear here." Foreground="Gray" Margin="10"/>
+             </ui:Card>
+        </StackPanel>
     </Grid>
 </Page>

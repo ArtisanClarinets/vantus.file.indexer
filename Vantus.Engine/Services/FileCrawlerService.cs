@@ -11,6 +11,9 @@ public class FileCrawlerService : IDisposable
     private readonly ISettingsStore _settingsStore;
     private readonly List<FileSystemWatcher> _watchers = new();
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CancellationTokenSource> _debounceTokens = new();
+    private int _activeCrawls = 0;
+
+    public bool IsCrawling => _activeCrawls > 0;
 
     public FileCrawlerService(ILogger<FileCrawlerService> logger, IndexerService indexer, ISettingsStore settingsStore)
     {
@@ -137,6 +140,19 @@ public class FileCrawlerService : IDisposable
 
     private async Task CrawlDirectoryAsync(string path, CancellationToken ct)
     {
+        Interlocked.Increment(ref _activeCrawls);
+        try
+        {
+            await CrawlDirectoryInternalAsync(path, ct);
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _activeCrawls);
+        }
+    }
+
+    private async Task CrawlDirectoryInternalAsync(string path, CancellationToken ct)
+    {
         // Files
         try
         {
@@ -169,7 +185,7 @@ public class FileCrawlerService : IDisposable
             {
                 if (ct.IsCancellationRequested) return;
                 // Recurse
-                await CrawlDirectoryAsync(dir, ct);
+                await CrawlDirectoryInternalAsync(dir, ct);
             }
         }
         catch (UnauthorizedAccessException)

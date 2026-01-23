@@ -6,8 +6,43 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="SearchPage">
-    <Grid>
-        <TextBlock Text="Search" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      Title="Search">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Search Files" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,24"/>
+
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ui:TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search for files, content, tags..." Icon="{ui:SymbolIcon Search24}">
+                <ui:TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                </ui:TextBox.InputBindings>
+            </ui:TextBox>
+            <ui:Button Grid.Column="1" Command="{Binding SearchCommand}" Content="Search" Appearance="Primary" Margin="10,0,0,0"/>
+        </Grid>
+
+        <ListView Grid.Row="2" ItemsSource="{Binding Results}" MouseDoubleClick="ListView_MouseDoubleClick">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Path" Width="400" DisplayMemberBinding="{Binding Path}"/>
+                    <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding Size}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <ui:ProgressRing Grid.Row="2" IsIndeterminate="True" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Page>
