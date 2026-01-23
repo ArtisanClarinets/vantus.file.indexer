@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vantus.App\Vantus.App.csproj" />
+    <ProjectReference Include="..\Vantus.Engine\Vantus.Engine.csproj" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>

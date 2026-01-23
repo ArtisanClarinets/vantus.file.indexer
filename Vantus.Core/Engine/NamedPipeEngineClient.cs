@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using Microsoft.Extensions.Logging;
+using Vantus.Core.Models;
 
 namespace Vantus.Core.Engine;
 
@@ -13,30 +14,53 @@ public class NamedPipeEngineClient : IEngineClient
         _logger = logger;
     }
 
-    public async Task<string> GetIndexStatusAsync()
+    public async Task<EngineStatus> GetIndexStatusAsync()
     {
-        return await SendCommandAsync("STATUS");
-    }
-
-    public async Task<IEnumerable<string>> SearchAsync(string query)
-    {
-        var response = await SendCommandAsync($"SEARCH {query}");
-        if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
-            return Enumerable.Empty<string>();
-
+        var response = await SendCommandAsync("STATUS");
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(response) ?? Enumerable.Empty<string>();
+            return System.Text.Json.JsonSerializer.Deserialize<EngineStatus>(response)
+                   ?? new EngineStatus { State = "Unknown" };
         }
         catch
         {
-            return Enumerable.Empty<string>();
+            return new EngineStatus { State = response }; // Fallback if raw string
+        }
+    }
+
+    public async Task<IEnumerable<FileResult>> SearchAsync(string query)
+    {
+        var response = await SendCommandAsync($"SEARCH {query}");
+        if (string.IsNullOrEmpty(response) || response == "Unknown" || response == "Disconnected")
+            return Enumerable.Empty<FileResult>();
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<FileResult>>(response) ?? Enumerable.Empty<FileResult>();
+        }
+        catch
+        {
+            return Enumerable.Empty<FileResult>();
         }
     }
 
     public Task PauseIndexingAsync() => SendCommandAsync("PAUSE");
     public Task ResumeIndexingAsync() => SendCommandAsync("RESUME");
     public Task RequestRebuildIndexAsync() => SendCommandAsync("REBUILD");
+    public Task UndoLastActionAsync() => SendCommandAsync("UNDO");
+
+    public async Task<IEnumerable<Rule>> GetRulesAsync()
+    {
+        var response = await SendCommandAsync("GET_RULES");
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<Rule>>(response) ?? Enumerable.Empty<Rule>();
+        }
+        catch
+        {
+            return Enumerable.Empty<Rule>();
+        }
+    }
 
     private async Task<string> SendCommandAsync(string command)
     {

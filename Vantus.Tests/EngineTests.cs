@@ -58,10 +58,10 @@ public class EngineTests : IDisposable
         await db.InitializeAsync();
 
         var tagService = new TagService(db, _tagLoggerMock.Object);
-        var rulesService = new RulesEngineService(tagService, db, _rulesLoggerMock.Object);
+        var actionLog = new ActionLogService(db, _actionLogLoggerMock.Object);
+        var rulesService = new RulesEngineService(tagService, db, actionLog, _rulesLoggerMock.Object);
         var aiService = new AiService(tagService, _aiLoggerMock.Object);
         var partnerService = new PartnerService(db, _partnerLoggerMock.Object);
-        var actionLog = new ActionLogService(db, _actionLogLoggerMock.Object);
 
         var indexer = new IndexerService(db, rulesService, aiService, partnerService, actionLog, _indexerLoggerMock.Object);
 
@@ -107,9 +107,9 @@ public class EngineTests : IDisposable
                 new { FileId = row.id });
             Assert.Equal(1, partner);
 
-            // 4. Verify Log (Should be 2 because we indexed 2 files)
+            // 4. Verify Log (Should be 3: 2 Indexes + 1 Tag Rule Application)
             var logCount = await conn.ExecuteScalarAsync<int>("SELECT count(*) FROM action_log");
-            Assert.Equal(2, logCount);
+            Assert.Equal(3, logCount);
         }
         finally
         {
@@ -133,7 +133,8 @@ public class EngineTests : IDisposable
         }
 
         var tagService = new TagService(db, _tagLoggerMock.Object);
-        var rulesService = new RulesEngineService(tagService, db, _rulesLoggerMock.Object);
+        var actionLog = new ActionLogService(db, _actionLogLoggerMock.Object);
+        var rulesService = new RulesEngineService(tagService, db, actionLog, _rulesLoggerMock.Object);
 
         var sourceFile = Path.Combine(Path.GetTempPath(), "source.moveme");
         // Destination is same folder (temp), so it's a no-op move if filename same?

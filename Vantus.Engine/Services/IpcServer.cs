@@ -2,6 +2,7 @@
 using System.IO.Pipes;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Dapper;
 
 namespace Vantus.Engine.Services;
 
@@ -11,14 +12,18 @@ public class IpcServer
     private readonly SearchService _searchService;
     private readonly DatabaseService _db;
     private readonly FileCrawlerService _crawler;
+    private readonly ActionLogService _actionLog;
+    private readonly RulesEngineService _rulesEngine;
     private const string PipeName = "VantusEnginePipe";
 
-    public IpcServer(ILogger<IpcServer> logger, SearchService searchService, DatabaseService db, FileCrawlerService crawler)
+    public IpcServer(ILogger<IpcServer> logger, SearchService searchService, DatabaseService db, FileCrawlerService crawler, ActionLogService actionLog, RulesEngineService rulesEngine)
     {
         _logger = logger;
         _searchService = searchService;
         _db = db;
         _crawler = crawler;
+        _actionLog = actionLog;
+        _rulesEngine = rulesEngine;
     }
 
     public async Task StartAsync(CancellationToken ct)
@@ -60,16 +65,21 @@ public class IpcServer
                 var line = await reader.ReadLineAsync(ct);
                 if (line == "STATUS")
                 {
-                    await writer.WriteLineAsync("Indexing");
+                    using var conn = _db.GetConnection();
+                    var count = await conn.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM files");
+                    var status = new Vantus.Core.Models.EngineStatus
+                    {
+                         State = _crawler.IsCrawling ? "Crawling" : "Idle",
+                         IndexedCount = count,
+                         IsCrawling = _crawler.IsCrawling
+                    };
+                    await writer.WriteLineAsync(System.Text.Json.JsonSerializer.Serialize(status));
                 }
                 else if (line?.StartsWith("SEARCH ") == true)
                 {
                     var query = line.Substring(7);
                     var results = await _searchService.SearchAsync(query);
-                    // Use simple JSON serialization or custom delimiter that handles paths
-                    // JSON is safer.
-                    var paths = results.Select(r => r.Path).ToList();
-                    var json = System.Text.Json.JsonSerializer.Serialize(paths);
+                    var json = System.Text.Json.JsonSerializer.Serialize(results);
                     await writer.WriteLineAsync(json);
                 }
                 else if (line == "REBUILD")
@@ -77,6 +87,17 @@ public class IpcServer
                     await _db.RebuildAsync();
                     await _crawler.UpdateLocationsAsync(ct);
                     await writer.WriteLineAsync("OK");
+                }
+                else if (line == "UNDO")
+                {
+                    await _actionLog.UndoLastActionAsync();
+                    await writer.WriteLineAsync("OK");
+                }
+                else if (line == "GET_RULES")
+                {
+                    var rules = await _rulesEngine.GetRulesAsync();
+                    var json = System.Text.Json.JsonSerializer.Serialize(rules);
+                    await writer.WriteLineAsync(json);
                 }
                 else
                 {
