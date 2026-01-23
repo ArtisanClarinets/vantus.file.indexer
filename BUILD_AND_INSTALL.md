@@ -59,3 +59,15 @@ If you strictly require a "setup.exe" style installer (like Inno Setup) and want
 
 1.  You must publish the app as "Unpackaged". This requires modifying the project file or using specific publish profiles, which is more complex and requires you to manually ensure the Windows App SDK Runtime is installed on the target machine.
 2.  **Recommendation**: Stick to **MSIX (Vantus.Packaging)** for the most reliable Windows 10/11 experience.
+
+## Automated Build Script
+
+To simplify the packaging process, you can use the provided PowerShell script. This script builds the solution in Release mode and moves the generated installer to the repository root.
+
+1.  Open PowerShell as Administrator (or Developer PowerShell for Visual Studio).
+2.  Run the script:
+    ```powershell
+    .\scripts\publish_installer.ps1
+    ```
+3.  Upon success, you will find the installer at `.\VantusInstaller.msixbundle`.
+    *   If a bootstrapper (`setup.exe`) was generated (requires signing/updates configuration), it will be at `.\VantusSetup.exe`.
