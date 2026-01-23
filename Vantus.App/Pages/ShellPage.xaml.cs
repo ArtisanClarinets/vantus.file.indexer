@@ -29,6 +29,8 @@ public sealed partial class ShellPage : Page
                      ContentFrame.Navigate(typeof(DashboardPage));
                  else if (navItem.Tag.ToString() == "results_previews")
                      ContentFrame.Navigate(typeof(SearchPage));
+                 else if (navItem.Tag.ToString() == "partner_directory")
+                     ContentFrame.Navigate(typeof(PartnersPage));
                  else
                      ContentFrame.Navigate(typeof(SettingsPage), navItem.Tag);
                  break;
@@ -58,6 +60,10 @@ public sealed partial class ShellPage : Page
                 else if (tag == "results_previews")
                 {
                     ContentFrame.Navigate(typeof(SearchPage));
+                }
+                else if (tag == "partner_directory")
+                {
+                    ContentFrame.Navigate(typeof(PartnersPage));
                 }
                 else
                 {

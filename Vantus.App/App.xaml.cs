@@ -47,6 +47,7 @@ public partial class App : Application
                 services.AddTransient<ImportExportPageViewModel>();
                 services.AddTransient<SearchPageViewModel>();
                 services.AddTransient<DashboardViewModel>();
+                services.AddTransient<PartnersPageViewModel>();
             }).
             Build();
     }

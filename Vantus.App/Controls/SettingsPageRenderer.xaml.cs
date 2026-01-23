@@ -123,9 +123,36 @@ public sealed partial class SettingsPageRenderer : UserControl
                     break;
                 case "button":
                     var btn = new Button();
-                    btn.Content = "Action";
-                    // Button usually triggers command, but here just placeholder?
-                    // Assuming no 'Value' to bind for button except maybe content or enabled state.
+                    btn.Content = vm.Definition.Label ?? "Action";
+                    btn.Click += async (s, e) =>
+                    {
+                        if (vm.Definition.SettingId == "about.reset_app")
+                        {
+                            var store = App.GetService<Vantus.Core.Interfaces.ISettingsStore>();
+                            store.Reset();
+                            await store.SaveAsync();
+
+                            var dialog = new ContentDialog
+                            {
+                                Title = "Application Reset",
+                                Content = "All settings have been reset to defaults.",
+                                CloseButtonText = "OK",
+                                XamlRoot = this.XamlRoot
+                            };
+                            await dialog.ShowAsync();
+                        }
+                        else
+                        {
+                            var dialog = new ContentDialog
+                            {
+                                Title = "Action Executed",
+                                Content = $"Action '{vm.Definition.Label}' triggered.\n(Not fully implemented)",
+                                CloseButtonText = "OK",
+                                XamlRoot = this.XamlRoot
+                            };
+                            await dialog.ShowAsync();
+                        }
+                    };
                     content = btn;
                     break;
                 case "status":
@@ -138,6 +165,31 @@ public sealed partial class SettingsPageRenderer : UserControl
                             tb.Text = vm.Value?.ToString() ?? "";
                     };
                     content = tb;
+                    break;
+                case "multi_select":
+                    // Simple text-based list editor (semicolon separated)
+                    var tbList = new TextBox();
+                    tbList.Width = 300;
+                    tbList.AcceptsReturn = true;
+                    tbList.TextWrapping = TextWrapping.Wrap;
+
+                    if (vm.Value is System.Collections.IEnumerable enumerable)
+                    {
+                        var list = new List<string>();
+                        foreach (var item in enumerable) list.Add(item?.ToString() ?? "");
+                        tbList.Text = string.Join("; ", list);
+                    }
+
+                    tbList.LostFocus += (s, e) =>
+                    {
+                        // Update on lost focus to avoid rapid updates
+                        var newValue = tbList.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                                  .Select(x => x.Trim())
+                                                  .Where(x => !string.IsNullOrEmpty(x))
+                                                  .ToList();
+                        vm.Value = newValue;
+                    };
+                    content = tbList;
                     break;
             }
         }
