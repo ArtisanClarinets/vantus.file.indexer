@@ -15,15 +15,45 @@ dotnet restore Vantus.FileIndexer.sln
 # Build the packaging project
 Write-Host "Building Vantus.Packaging (Release|x64)..."
 
-# Try to find MSBuild (heuristic) or use dotnet build
-# Note: wapproj often requires msbuild.exe.
-# If running in VS Developer Command Prompt, msbuild is available.
-# We attempt to use msbuild first.
+# Locate MSBuild
+$msbuildExe = $null
 
+# 1. Check PATH
 if (Get-Command msbuild -ErrorAction SilentlyContinue) {
-    msbuild Vantus.Packaging\Vantus.Packaging.wapproj /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false
+    $msbuildExe = "msbuild"
+}
+
+# 2. Check vswhere
+if (-not $msbuildExe) {
+    $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+    if (Test-Path $vswhere) {
+        $found = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+        if ($found -and (Test-Path $found)) {
+            $msbuildExe = $found
+        }
+    }
+}
+
+# 3. Check standard paths (VS 2022)
+if (-not $msbuildExe) {
+    $candidates = @(
+        "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c) {
+            $msbuildExe = $c
+            break
+        }
+    }
+}
+
+if ($msbuildExe) {
+    Write-Host "Using MSBuild: $msbuildExe"
+    & $msbuildExe Vantus.Packaging\Vantus.Packaging.wapproj /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false
 } else {
-    Write-Warning "MSBuild not found in PATH. Attempting 'dotnet build' (this may fail for .wapproj)..."
+    Write-Warning "MSBuild not found via vswhere or standard paths. Fallback to 'dotnet build' (likely to fail for .wapproj)..."
     dotnet build Vantus.Packaging\Vantus.Packaging.wapproj -c Release /p:Platform=x64 /p:AppxBundle=Always /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxPackageSigningEnabled=false
 }
 
